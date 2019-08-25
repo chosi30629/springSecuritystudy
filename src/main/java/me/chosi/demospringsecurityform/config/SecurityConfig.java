@@ -2,20 +2,13 @@ package me.chosi.demospringsecurityform.config;
 
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.access.AccessDecisionManager;
-import org.springframework.security.access.AccessDecisionVoter;
 import org.springframework.security.access.expression.SecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
-import org.springframework.security.access.vote.AffirmativeBased;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler;
-import org.springframework.security.web.access.expression.WebExpressionVoter;
-
-import java.util.Arrays;
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -49,11 +42,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return handler;
     }
 
+    // 밑에 http 에 적용하는 것보다 정적인 것은 여기서 적용하는 것이 좋음, 필요없는 리소스를 사용함
     @Override
     public void configure(WebSecurity web) throws Exception {
         web.ignoring().requestMatchers(PathRequest.toStaticResources().atCommonLocations());
     }
 
+    // 동적으로 사용하는 것은 인증여부 처리를 해야함으로 여기서 적용하는 것이 좋음
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
