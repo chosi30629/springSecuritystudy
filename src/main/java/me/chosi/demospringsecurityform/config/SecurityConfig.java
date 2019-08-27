@@ -2,6 +2,7 @@ package me.chosi.demospringsecurityform.config;
 
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.expression.SecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -10,7 +11,14 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 @Configuration
 @EnableWebSecurity
@@ -72,14 +80,24 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/");
 
+        http.exceptionHandling()
+                .accessDeniedHandler((httpServletRequest, httpServletResponse, e) -> {
+                    UserDetails principal = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                    String username = principal.getUsername();
+                    System.out.println(username + " is denied to access " + httpServletRequest.getRequestURI());
+                    httpServletResponse.sendRedirect("/access-denied");
+                });
+//                .accessDeniedPage("/access-denied");
+
+        /*
         http.sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);    // 세션상태 유지 안함
-                /*
                 .sessionFixation()
                     .changeSessionId()
                 .maximumSessions(1)
                     .maxSessionsPreventsLogin(true); 기본값 false, true 면 새 브라우저에서 로그인 못함, false 면 기존 브라우저 세션 끊음
-                */
+        */
+
         // 비동기 시 다른 스레드와 인증정보 공유
         SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
     }
